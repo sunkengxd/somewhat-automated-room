@@ -1,0 +1,2 @@
+#define REQUEST_WEATHER 0xDE
+#define REQUEST_TIME    0xAD
