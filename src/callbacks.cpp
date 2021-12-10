@@ -18,8 +18,9 @@ Task time_btn_task(TASK_IMMEDIATE, TASK_FOREVER, &time_btn_handler);
 
 LiquidCrystal_I2C lcd(0x27, 16, 2);
 
-int weather_degrees_c;
-int time;
+int weather_degrees_c = 404;
+int time = 404;
+int currentMessage = 0;
 
 void init_tasks() {
     runner.init();
@@ -57,6 +58,22 @@ void lcd_output_callback() {
         lcd.print("Hello there!");
     }
 
+    char *messages = {
+        "Last requested time: ",
+        "Weather: "
+    };
+
+    int data[] { time, weather_degrees_c };
+
+    lcd.clear();
+    lcd.print(messages[currentMessage]);
+    if(data[currentMessage] == 404) lcd.print("Not yet requested");
+    else lcd.print(data[currentMessage]);
+
+    if (++currentMessage > 1) {
+        currentMessage = 0;
+    }
+    
 
 }
 
@@ -65,16 +82,46 @@ void noise_monitor_callback() {
     if(noise_monitor_task.isFirstIteration()) {
         Serial.println("Running noise monitor..");
         pinMode(MICROPHONE_PIN, INPUT);
+
+        for(int pin = 0; pin < LED_COUNT; pin++) {
+            pinMode(LED_PINS[pin], OUTPUT);
+        }
     }
 
     int mic_val = analogRead(MICROPHONE_PIN);
+
+    int led_indicator_count = map(mic_val, 0, 1023, 0, LED_COUNT);
+
+    for (int pin = 0; pin < led_indicator_count; pin++) {
+        digitalWrite(LED_PINS[pin], HIGH); // turn on N leds, where N is proportional to the noise lvl
+    }
+
+    for(int pin = LED_COUNT; pin > led_indicator_count; pin--) {
+        digitalWrite(LED_PINS[pin], LOW); // turn fff the rest of the pins
+    }
+    
 }
 
 
 void gas_monitor_callback() {
     if(gas_monitor_task.isFirstIteration()) {
         Serial.println("Running gas monitor..");
+    }
 
+    int gas_value = analogRead(MQ_PIN);
+    
+    if(gas_value < 300) {
+        digitalWrite(RGB_G, HIGH);
+        digitalWrite(RGB_B, LOW);
+        digitalWrite(RGB_R, LOW);
+    } else if(gas_value < 600) {
+        digitalWrite(RGB_G, LOW);
+        digitalWrite(RGB_B, HIGH);
+        digitalWrite(RGB_R, LOW);
+    } else {
+        digitalWrite(RGB_G, LOW);
+        digitalWrite(RGB_B, LOW);
+        digitalWrite(RGB_R, HIGH);
     }
 }
 
@@ -109,7 +156,7 @@ void weather_btn_handler() {
 
     if(request_weather) {
         Serial.write(REQUEST_WEATHER);
-        while (Serial.available() <= 0);
+        while (Serial.available() <= 0); // possible bug if 2 handlers are waiting for output at the same time
         
         weather_degrees_c = Serial.read();
     }
@@ -128,7 +175,9 @@ void play_pause_btn_handler() {
         is_playing = !is_playing;
 
         if(is_playing) {
-
+            // todo pause
+        } else {
+            // todo play
         }
     }
 }
