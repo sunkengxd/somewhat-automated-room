@@ -1,10 +1,11 @@
 #define MICROPHONE_PIN A0
 #define MQ_PIN         A1
-#define RGB_R          A2
-#define RGB_G          A3
-#define RGB_B          A4
+#define RGB_R           0
+#define RGB_G           4
+#define RGB_B           6
 #define SPEAKER        A5
 
+#define DHT_PIN             1
 #define ECHO_PIN            2
 #define TRIGGER_PIN         3
 #define WEATHER_BTN_PIN     4

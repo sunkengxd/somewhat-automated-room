@@ -5,6 +5,7 @@ void volume_ctl_callback();     // handle speaker volume with gestures
 void weather_btn_handler();     // handle the weather button presses
 void play_pause_btn_handler();  // handle the play/pause button presses
 void time_btn_handler();        // handle the time button presses
+void dht_monitor_callback();    // reads DHT data
 
 void init_tasks(); // run task setup
 void run_tasks();  // loop tasks

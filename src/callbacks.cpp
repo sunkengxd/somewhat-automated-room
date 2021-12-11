@@ -1,6 +1,7 @@
 #include <TaskScheduler.h>
 #include <LiquidCrystal_I2C.h>
 #include <Wire.h>
+#include <DHT.h>
 
 #include "callbacks.h"
 #include "pins.h"
@@ -9,19 +10,24 @@
 
 Scheduler runner;
 
-Task lcd_output_task(3000, TASK_FOREVER, &lcd_output_callback);
+Task lcd_output_task(3000UL, TASK_FOREVER, &lcd_output_callback);
 Task noise_monitor_task(TASK_SECOND, TASK_FOREVER, &noise_monitor_callback);
 Task gas_monitor_task(TASK_SECOND, TASK_FOREVER, &gas_monitor_callback);
 Task volume_ctl_task(TASK_IMMEDIATE, TASK_FOREVER, &volume_ctl_callback);
 Task weather_btn_task(TASK_IMMEDIATE, TASK_FOREVER, &weather_btn_handler);
 Task play_pause_btn_task(TASK_IMMEDIATE, TASK_FOREVER, &play_pause_btn_handler);
 Task time_btn_task(TASK_IMMEDIATE, TASK_FOREVER, &time_btn_handler);
+Task dht_monitor_task(3000UL, TASK_FOREVER, &dht_monitor_callback);
 
 LiquidCrystal_I2C lcd(0x27, 16, 2);
+DHT dht(DHT_PIN, DHTTYPE);
 
 int weather_degrees_c = 404;
 int time = 404;
 int currentMessage = 0;
+
+int dht_temperature;
+int dht_humidity;
 
 void init_tasks() {
     runner.init();
@@ -30,17 +36,17 @@ void init_tasks() {
     runner.addTask(noise_monitor_task);  
     runner.addTask(gas_monitor_task);  
     runner.addTask(volume_ctl_task);  
-    runner.addTask(weather_btn_task);  
+    //runner.addTask(weather_btn_task);  
     runner.addTask(play_pause_btn_task);
-    runner.addTask(time_btn_task);
+    //runner.addTask(time_btn_task);
 
     lcd_output_task.enable();
     noise_monitor_task.enable();
     gas_monitor_task.enable();
     volume_ctl_task.enable();
-    weather_btn_task.enable();
+    //weather_btn_task.enable();
     play_pause_btn_task.enable();
-    time_btn_task.enable();
+    //time_btn_task.enable();
 }
 
 
@@ -59,18 +65,20 @@ void lcd_output_callback() {
         lcd.print("Hello there!");
     }
 
-    char *messages[2];
+    const char *messages[4];
     messages[0] = "Last requested time: ";
     messages[1] = "Weather: ";
+    messages[2] = "Room temperature: ";
+    messages[3] = "Room humidity: ";
 
-    int data[] { time, weather_degrees_c };
+    int data[] { time, weather_degrees_c, dht_temperature, dht_humidity };
 
     lcd.clear();
     lcd.print(messages[currentMessage]);
     if(data[currentMessage] == 404) lcd.print("Not yet requested");
     else lcd.print(data[currentMessage]);
 
-    if (++currentMessage > 1) {
+    if (++currentMessage > 3) {
         currentMessage = 0;
     }
     
@@ -123,6 +131,17 @@ void gas_monitor_callback() {
         digitalWrite(RGB_B, LOW);
         digitalWrite(RGB_R, HIGH);
     }
+}
+
+
+void dht_monitor_callback() {
+    if(volume_ctl_task.isFirstIteration()) {
+        Serial.println("Initializing DHT..");
+
+        dht.begin();
+    }
+    dht_temperature = dht.readTemperature(); // read as C
+    dht_humidity = dht.readHumidity();
 }
 
 
