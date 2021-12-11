@@ -5,6 +5,7 @@
 #include "callbacks.h"
 #include "pins.h"
 #include "request_codes.h"
+#include "constants.h"
 
 Scheduler runner;
 
@@ -110,12 +111,12 @@ void gas_monitor_callback() {
 
     int gas_value = analogRead(MQ_PIN);
     
-    if(gas_value < 300) {
+    if(gas_value < LOW_HYDROGEN_LEVEL) {
         digitalWrite(RGB_G, HIGH);
         digitalWrite(RGB_B, LOW);
         digitalWrite(RGB_R, LOW);
-    } else if(gas_value < 600) {
-        digitalWrite(RGB_G, LOW);
+    } else if(gas_value < MID_HYDROGEN_LEVEL) {
+        digitalWrite(RGB_G, HIGH);
         digitalWrite(RGB_B, HIGH);
         digitalWrite(RGB_R, LOW);
     } else {
@@ -142,6 +143,13 @@ void volume_ctl_callback() {
 
     long duration = pulseIn(ECHO_PIN, HIGH);
     int distance = duration * 0.034 / 2; // cm
+
+    if (distance >= 8) {
+        return ;
+    }
+    
+    int volume = map(distance, 0, 7, 0, 1023);
+    analogWrite(SPEAKER, volume);
 }
 
 
