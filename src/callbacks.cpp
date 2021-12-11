@@ -39,6 +39,7 @@ void init_tasks() {
     //runner.addTask(weather_btn_task);  
     runner.addTask(play_pause_btn_task);
     //runner.addTask(time_btn_task);
+    runner.addTask(dht_monitor_task);
 
     lcd_output_task.enable();
     noise_monitor_task.enable();
@@ -47,6 +48,7 @@ void init_tasks() {
     //weather_btn_task.enable();
     play_pause_btn_task.enable();
     //time_btn_task.enable();
+    dht_monitor_task.enable();
 }
 
 
