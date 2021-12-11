@@ -14,4 +14,4 @@
 
 #define LED_COUNT 5
 
-const int LED_PINS[5] = { 8, 9, 10, 11, 12 }
+const int LED_PINS[5] = { 8, 9, 10, 11, 12 };

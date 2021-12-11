@@ -59,10 +59,9 @@ void lcd_output_callback() {
         lcd.print("Hello there!");
     }
 
-    char *messages = {
-        "Last requested time: ",
-        "Weather: "
-    };
+    char *messages[2];
+    messages[0] = "Last requested time: ";
+    messages[1] = "Weather: ";
 
     int data[] { time, weather_degrees_c };
 
